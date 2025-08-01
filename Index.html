@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Beast Blitz</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #1f1f1f, #2d2d2d);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-top: 30px;
+      font-size: 3em;
+      color: #ffb100;
+    }
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .active {
+      display: flex;
+    }
+    .btn {
+      margin: 10px;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      background-color: #ffb100;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .packs {
+      display: flex;
+      justify-content: space-around;
+      width: 90%;
+      margin: 20px 0;
+    }
+    .pack {
+      flex: 1;
+      margin: 10px;
+      background: #333;
+      padding: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 1.8em;
+      transition: 0.3s;
+    }
+    .pack:hover {
+      background: #444;
+    }
+    .selected {
+      border: 2px solid #ffb100;
+    }
+    #animation {
+      font-size: 3em;
+      margin: 30px;
+      min-height: 80px;
+    }
+    #result {
+      font-size: 1.5em;
+      margin: 20px;
+    }
+    #score {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 1.2em;
+      background: #444;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="score">Score: 0</div>
+
+  <div class="screen active" id="homeScreen">
+    <h1>🐾 Beast Blitz 🐾</h1>
+    <button class="btn" onclick="startGame()">Start Game</button>
+  </div>
+
+  <div class="screen" id="gameScreen">
+    <div class="packs">
+      <div class="pack" id="packA" onclick="selectPack('A')"></div>
+      <div class="pack" id="packB" onclick="selectPack('B')"></div>
+    </div>
+    <button class="btn" id="fightBtn" onclick="fight()" disabled>Fight!</button>
+    <div id="animation"></div>
+    <div id="result"></div>
+    <button class="btn" onclick="startGame()">Play Again</button>
+    <button class="btn" onclick="goHome()">Home</button>
+  </div>
+
+  <script>
+    const animals = [
+      { name: 'Lion', emoji: '🦁' },
+      { name: 'Tiger', emoji: '🐅' },
+      { name: 'Elephant', emoji: '🐘' },
+      { name: 'Wolf', emoji: '🐺' },
+      { name: 'Bear', emoji: '🐻' },
+      { name: 'Crocodile', emoji: '🐊' },
+      { name: 'Eagle', emoji: '🦅' },
+      { name: 'Gorilla', emoji: '🦍' },
+      { name: 'Rhino', emoji: '🦏' },
+      { name: 'Hippo', emoji: '🦛' },
+      { name: 'Leopard', emoji: '🐆' },
+      { name: 'Snake', emoji: '🐍' },
+      { name: 'Moose', emoji: '🦌' },
+      { name: 'Ox', emoji: '🐂' },
+      { name: 'Zebra', emoji: '🦓' },
+      { name: 'Horse', emoji: '🐎' },
+      { name: 'Komodo Dragon', emoji: '🦎' },
+      { name: 'Panther', emoji: '🐈‍⬛' },
+      { name: 'Wild Boar', emoji: '🐗' },
+      { name: 'Buffalo', emoji: '🐃' }
+    ];
+
+    let userScore = 0;
+    let selected = null;
+    let currentWinner = '';
+
+    function goHome() {
+      document.getElementById("homeScreen").classList.add("active");
+      document.getElementById("gameScreen").classList.remove("active");
+      document.getElementById("animation").textContent = '';
+      document.getElementById("result").textContent = '';
+      selected = null;
+    }
+
+    function startGame() {
+      document.getElementById("homeScreen").classList.remove("active");
+      document.getElementById("gameScreen").classList.add("active");
+      document.getElementById("animation").textContent = '';
+      document.getElementById("result").textContent = '';
+      document.getElementById("fightBtn").disabled = true;
+      selected = null;
+      generatePacks();
+    }
+
+    function generatePacks() {
+      const a = animals[Math.floor(Math.random() * animals.length)];
+      let b;
+      do {
+        b = animals[Math.floor(Math.random() * animals.length)];
+      } while (b.name === a.name);
+
+      const countA = Math.floor(Math.random() * 6) + 1;
+      const countB = Math.floor(Math.random() * 6) + 1;
+
+      packA.dataset.name = a.name;
+      packA.dataset.count = countA;
+      packA.innerHTML = `${a.emoji.repeat(countA)}<br>${countA} ${a.name}${countA > 1 ? 's' : ''}`;
+
+      packB.dataset.name = b.name;
+      packB.dataset.count = countB;
+      packB.innerHTML = `${b.emoji.repeat(countB)}<br>${countB} ${b.name}${countB > 1 ? 's' : ''}`;
+
+      packA.classList.remove("selected");
+      packB.classList.remove("selected");
+    }
+
+    function selectPack(side) {
+      selected = side;
+      document.getElementById("fightBtn").disabled = false;
+      packA.classList.remove("selected");
+      packB.classList.remove("selected");
+      if (side === 'A') packA.classList.add("selected");
+      else packB.classList.add("selected");
+    }
+
+    function fight() {
+      document.getElementById("fightBtn").disabled = true;
+      const a = { name: packA.dataset.name, count: parseInt(packA.dataset.count) };
+      const b = { name: packB.dataset.name, count: parseInt(packB.dataset.count) };
+
+      const strength = {
+        "Elephant": 9, "Rhino": 8, "Hippo": 8, "Gorilla": 7,
+        "Lion": 7, "Tiger": 7, "Bear": 7, "Crocodile": 6,
+        "Moose": 5, "Ox": 5, "Leopard": 6, "Wolf": 5,
+        "Eagle": 4, "Zebra": 3, "Horse": 3, "Snake": 4,
+        "Komodo Dragon": 5, "Panther": 6, "Wild Boar": 5, "Buffalo": 6
+      };
+
+      const scoreA = a.count * strength[a.name];
+      const scoreB = b.count * strength[b.name];
+      const winner = scoreA === scoreB ? (Math.random() < 0.5 ? 'A' : 'B') : (scoreA > scoreB ? 'A' : 'B');
+      currentWinner = winner;
+
+      const anim = `💥 ${packA.innerText.split('\n')[0]} vs ${packB.innerText.split('\n')[0]} 💥`;
+      document.getElementById("animation").textContent = anim;
+
+      setTimeout(() => {
+        const winPack = winner === 'A' ? a : b;
+        const losePack = winner === 'A' ? b : a;
+
+        let reason = `${winPack.count} ${winPack.name}${winPack.count > 1 ? 's' : ''} defeated ${losePack.count} ${losePack.name}${losePack.count > 1 ? 's' : ''} `;
+        reason += `because their raw strength and coordination overpowered their foes.`;
+
+        if (selected === winner) {
+          userScore++;
+          reason += ` You picked right! 🎯`;
+        } else {
+          reason += ` You guessed wrong. ❌`;
+        }
+
+        document.getElementById("result").textContent = reason;
+        document.getElementById("score").textContent = `Score: ${userScore}`;
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
