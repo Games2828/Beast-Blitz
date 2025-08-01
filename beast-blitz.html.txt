@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Beast Blitz 🐾</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #111, #222);
+      color: #fff;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3em;
+      margin-top: 20px;
+      color: #ff4747;
+      text-shadow: 2px 2px 8px #000;
+    }
+    .screen { display: none; padding: 20px; }
+    .active { display: block; }
+    .pack {
+      display: inline-block;
+      margin: 20px;
+      padding: 10px;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 1.5em;
+    }
+    .pack:hover { border-color: #888; background: #222; }
+    .selected { border-color: #ffcc00; background: #333; }
+    .button {
+      background: #ff4747;
+      color: white;
+      padding: 10px 20px;
+      margin: 15px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .button:hover { background: #e63b3b; }
+    #result { margin-top: 20px; font-size: 1.2em; }
+    #points { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>🐾 Beast Blitz 🐾</h1>
+
+  <div id="home" class="screen active">
+    <p>Welcome to Beast Blitz! Guess which animal pack will win in battle!</p>
+    <button class="button" onclick="startGame()">Start Game</button>
+  </div>
+
+  <div id="game" class="screen">
+    <div id="packs">
+      <div id="pack1" class="pack" onclick="selectPack(1)"></div>
+      <div id="pack2" class="pack" onclick="selectPack(2)"></div>
+    </div>
+    <button id="fightBtn" class="button" onclick="fight()" disabled>Fight!</button>
+    <div id="result"></div>
+    <div id="points">Points: 0</div>
+    <button class="button" onclick="nextRound()">Next Round</button>
+    <button class="button" onclick="goHome()">Home</button>
+  </div>
+
+  <script>
+    const animals = [
+      { name: "Crocodile", emoji: "🐊", strength: 9 },
+      { name: "Tiger", emoji: "🐅", strength: 9 },
+      { name: "Elephant", emoji: "🐘", strength: 10 },
+      { name: "Rhino", emoji: "🦏", strength: 9 },
+      { name: "Gorilla", emoji: "🦍", strength: 8 },
+      { name: "Wolf", emoji: "🐺", strength: 6 },
+      { name: "Lion", emoji: "🦁", strength: 9 },
+      { name: "Shark", emoji: "🦈", strength: 8 },
+      { name: "Bear", emoji: "🐻", strength: 9 },
+      { name: "Bull", emoji: "🐂", strength: 7 },
+      { name: "Boar", emoji: "🐗", strength: 6 },
+      { name: "Leopard", emoji: "🐆", strength: 8 },
+      { name: "Eagle", emoji: "🦅", strength: 6 },
+      { name: "Cobra", emoji: "🐍", strength: 5 },
+      { name: "Ram", emoji: "🐐", strength: 5 },
+      { name: "Alligator", emoji: "🐊", strength: 8 },
+      { name: "Kangaroo", emoji: "🦘", strength: 7 },
+      { name: "Dolphin", emoji: "🐬", strength: 7 },
+      { name: "Baboon", emoji: "🐒", strength: 6 },
+      { name: "Honey Badger", emoji: "🦡", strength: 9 }
+    ];
+
+    let pack1, pack2, guess, points = 0;
+
+    function startGame() {
+      document.getElementById("home").classList.remove("active");
+      document.getElementById("game").classList.add("active");
+      nextRound();
+    }
+
+    function goHome() {
+      document.getElementById("game").classList.remove("active");
+      document.getElementById("home").classList.add("active");
+    }
+
+    function nextRound() {
+      document.getElementById("fightBtn").disabled = true;
+      document.getElementById("result").innerText = "";
+      guess = null;
+
+      pack1 = createPack();
+      pack2 = createPack();
+
+      while (pack1.animal.name === pack2.animal.name) {
+        pack2 = createPack(); // prevent same animals
+      }
+
+      renderPack("pack1", pack1);
+      renderPack("pack2", pack2);
+    }
+
+    function createPack() {
+      const animal = animals[Math.floor(Math.random() * animals.length)];
+      const count = Math.floor(Math.random() * 6) + 1;
+      return { animal, count };
+    }
+
+    function renderPack(id, pack) {
+      const el = document.getElementById(id);
+      el.classList.remove("selected");
+      el.innerHTML = `${pack.count}× ${pack.animal.emoji} <br> <small>${pack.animal.name}</small>`;
+    }
+
+    function selectPack(num) {
+      guess = num;
+      document.getElementById("fightBtn").disabled = false;
+      document.getElementById("pack1").classList.remove("selected");
+      document.getElementById("pack2").classList.remove("selected");
+      document.getElementById(`pack${num}`).classList.add("selected");
+    }
+
+    function fight() {
+      const score1 = pack1.count * pack1.animal.strength;
+      const score2 = pack2.count * pack2.animal.strength;
+      let winner, loser, explanation;
+
+      if (score1 > score2) {
+        winner = pack1; loser = pack2;
+        explanation = explainVictory(winner.animal.name, loser.animal.name);
+        if (guess === 1) points += 10; else points -= 5;
+      } else if (score2 > score1) {
+        winner = pack2; loser = pack1;
+        explanation = explainVictory(winner.animal.name, loser.animal.name);
+        if (guess === 2) points += 10; else points -= 5;
+      } else {
+        explanation = "It was a tie! Neither pack could outmatch the other.";
+      }
+
+      document.getElementById("result").innerText = explanation;
+      document.getElementById("points").innerText = `Points: ${points}`;
+    }
+
+    function explainVictory(winner, loser) {
+      const explanations = {
+        "Crocodile": `The Crocodiles ambushed the ${loser}s with stealth and brute bite force.`,
+        "Tiger": `The Tigers outmaneuvered the ${loser}s with precision and speed.`,
+        "Elephant": `The Elephants trampled over the ${loser}s with unstoppable size.`,
+        "Rhino": `The Rhinos charged through the ${loser}s like a tank on a rampage.`,
+        "Gorilla": `Gorillas used brute strength to overpower the ${loser}s.`,
+        "Wolf": `The Wolves coordinated as a pack to outsmart the ${loser}s.`,
+        "Lion": `Lions asserted dominance over the ${loser}s with ferocity and teamwork.`,
+        "Shark": `Sharks struck swiftly and viciously, overwhelming the ${loser}s.`,
+        "Bear": `The Bear’s size and rage crushed the ${loser}s in close quarters.`,
+        "Bull": `The Bulls bulldozed through the ${loser}s with raw momentum.`,
+        "Boar": `Boars gored the ${loser}s unexpectedly in a frenzy.`,
+        "Leopard": `Leopards used stealth and agility to take down the ${loser}s.`,
+        "Eagle": `Eagles soared and struck the ${loser}s from above.`,
+        "Cobra": `Cobras used venom and surprise to turn the tables on the ${loser}s.`,
+        "Ram": `Rams used sheer stubbornness and headbutts to send the ${loser}s running.`,
+        "Alligator": `Alligators dragged the ${loser}s into a watery ambush.`,
+        "Kangaroo": `Kangaroos boxed and kicked their way through the ${loser}s.`,
+        "Dolphin": `Dolphins outsmarted the ${loser}s with speed and clever attacks.`,
+        "Baboon": `Baboons used their wits and numbers to dismantle the ${loser}s.`,
+        "Honey Badger": `The Honey Badgers simply didn’t care — and obliterated the ${loser}s.`
+      };
+      return explanations[winner] || `${winner}s defeated the ${loser}s with superior skill.`;
+    }
+  </script>
+</body>
+</html>
